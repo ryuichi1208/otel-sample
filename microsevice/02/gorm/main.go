@@ -22,7 +22,9 @@ func main() {
 		panic(err)
 	}
 
-	if err := db.Use(otelgorm.NewPlugin()); err != nil {
+	var opts otelgorm.Option
+	opts = otelgorm.WithDBName("mydb")
+	if err := db.Use(otelgorm.NewPlugin(opts)); err != nil {
 		panic(err)
 	}
 
