@@ -11,7 +11,12 @@ exporters:
       insecure: true
 
 processors:
+  #probabilistic_sampler:
+  #  sampling_percentage: 100
+  #  sampling_priority: priority
   batch:
+  # send_batch_size: 10000
+  #  timeout: 10s
 
 service:
   pipelines:

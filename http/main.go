@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"main/lib/http"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
@@ -27,41 +28,32 @@ var (
 	)
 )
 
-func add(ctx context.Context, x, y int64) int64 {
-	var span trace.Span
-	_, span = tracer.Start(ctx, "Addition")
-	defer span.End()
-
-	return x + y
-}
-
-func multiply(ctx context.Context, x, y int64) int64 {
-	var span trace.Span
-	_, span = tracer.Start(ctx, "Multiplication")
-	defer span.End()
-
-	return x * y
-}
-
-func newResource() *resource.Resource {
-	return resource.NewWithAttributes(
+func installExportPipeline(ctx context.Context, svcName, svcVersion string, ratio float64) (func(context.Context) error, error) {
+	// Create a new resource with service name and version
+	resource := resource.NewWithAttributes(
 		semconv.SchemaURL,
-		semconv.ServiceName("otlptrace-example"),
-		semconv.ServiceVersion("0.0.1"),
+		semconv.ServiceName(svcName),
+		semconv.ServiceVersion(svcVersion),
 	)
-}
 
-func installExportPipeline(ctx context.Context) (func(context.Context) error, error) {
+	// Create a new OTLP exporter over gRPC with no authentication and
 	client := otlptracehttp.NewClient(otlptracehttp.WithInsecure())
+	// Create a new trace exporter
 	exporter, err := otlptrace.New(ctx, client)
 	if err != nil {
 		return nil, fmt.Errorf("creating OTLP trace exporter: %w", err)
 	}
 
+	// Create a new trace provider with the exporter
 	tracerProvider := sdktrace.NewTracerProvider(
 		sdktrace.WithBatcher(exporter),
-		sdktrace.WithResource(newResource()),
+		sdktrace.WithSampler(
+			sdktrace.ParentBased(sdktrace.TraceIDRatioBased(ratio)),
+		),
+		sdktrace.WithResource(resource),
 	)
+
+	// Register the trace provider with the global tracer provider
 	otel.SetTracerProvider(tracerProvider)
 
 	return tracerProvider.Shutdown, nil
@@ -69,16 +61,18 @@ func installExportPipeline(ctx context.Context) (func(context.Context) error, er
 
 func main() {
 	ctx := context.Background()
-	// Registers a tracer Provider globally.
-	shutdown, err := installExportPipeline(ctx)
+	shutdown, err := installExportPipeline(ctx, "otlptrace-example", "0.0.1", 1.0)
 	if err != nil {
 		log.Fatal(err)
 	}
+	ctx, span := tracer.Start(ctx, "main")
 	defer func() {
 		if err := shutdown(ctx); err != nil {
 			log.Fatal(err)
 		}
 	}()
 
-	log.Println("the answer is", add(ctx, multiply(ctx, multiply(ctx, 2, 2), 10), 2))
+	c := http.New(ctx, tracer)
+	c.Do(ctx)
+	span.End()
 }
