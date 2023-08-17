@@ -1,0 +1,38 @@
+receivers:
+  prometheus:
+    config:
+      scrape_configs:
+      - job_name: 'blackbox'
+        metrics_path: /probe
+        params:
+          module: [http_2xx]
+        static_configs:
+          - targets:
+            - http://prometheus.io
+            - https://prometheus.io
+            - https://opentelemetry.io
+            - https://qiita.com
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: __param_target
+          - source_labels: [__param_target]
+            target_label: instance
+          - target_label: __address__
+            replacement: blackbox_exporter:9115
+
+exporters:
+  jaeger:
+    endpoint: jaeger:14250
+  file/no_rotation:
+    path: /test.log
+
+processors:
+  batch:
+
+service:
+  pipelines:
+    metrics:
+      receivers: [prometheus]
+      processors: [batch]
+      exporters: [file/no_rotation]
+

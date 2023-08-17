@@ -3,7 +3,6 @@ package http
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"go.opentelemetry.io/otel/trace"
 )
@@ -22,7 +21,6 @@ func New(ctx context.Context, t trace.Tracer) Client {
 func (c Client) add(ctx context.Context, x, y int64) int64 {
 	var span trace.Span
 	_, span = c.t.Start(ctx, "Addition2")
-	time.Sleep(2 * time.Second)
 	defer span.End()
 
 	return x + y
@@ -31,7 +29,6 @@ func (c Client) add(ctx context.Context, x, y int64) int64 {
 func (c Client) Do(ctx context.Context) int64 {
 	var span trace.Span
 	_, span = c.t.Start(ctx, "Addition1")
-	time.Sleep(1 * time.Second)
 	defer span.End()
 
 	c.add(ctx, 1, 2)
