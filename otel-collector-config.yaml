@@ -11,14 +11,15 @@ exporters:
       insecure: true
 
 processors:
-  #probabilistic_sampler:
-  #  sampling_percentage: 100
-  #  sampling_priority: priority
   batch:
-  # send_batch_size: 10000
-  #  timeout: 10s
+
+extensions:
+  health_check:
+  pprof:
+    endpoint: "0.0.0.0:1888"
 
 service:
+  extensions: [pprof]
   pipelines:
     traces:
       receivers: [otlp]

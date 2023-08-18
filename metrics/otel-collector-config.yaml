@@ -7,11 +7,18 @@ receivers:
 exporters:
   file:
     path: /dev/stdout
+    logLebel: debug
 
 processors:
   batch:
 
+extensions:
+  health_check:
+  pprof:
+    endpoint: "0.0.0.0:1888"
+
 service:
+  extensions: [pprof]
   pipelines:
     metrics:
       receivers: [otlp]
