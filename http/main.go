@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"log"
 	"main/lib/http"
+	"runtime"
 
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -34,6 +36,7 @@ func installExportPipeline(ctx context.Context, svcName, svcVersion string, rati
 		semconv.SchemaURL,
 		semconv.ServiceName(svcName),
 		semconv.ServiceVersion(svcVersion),
+		attribute.String("go", runtime.Version()),
 	)
 
 	// Create a new OTLP exporter over gRPC with no authentication and

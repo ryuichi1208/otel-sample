@@ -7,7 +7,6 @@ receivers:
 exporters:
   file:
     path: /dev/stdout
-    logLebel: debug
 
 processors:
   batch:
@@ -19,6 +18,11 @@ extensions:
 
 service:
   extensions: [pprof]
+  telemetry:
+    logs:
+      level: "debug"
+    metrics:
+      address: ":8888"
   pipelines:
     metrics:
       receivers: [otlp]
