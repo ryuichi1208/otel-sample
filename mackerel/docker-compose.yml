@@ -1,0 +1,27 @@
+---
+version: '3.8'
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "14268:14268" # for exporter
+      - "16686:16686" # for browser
+
+  localstack:
+    image: localstack/localstack
+    ports:
+      - "127.0.0.1:4566:4566"
+
+  otel-collector:
+    image: otel/opentelemetry-collector:0.67.0
+    restart: always
+    command: ["--config=/etc/otel-collector-config.yaml", ""]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317" # for grpc
+      - "4318:4318" # for http
+    environment:
+      MACKEREL_APIKEY: ${MACKEREL_API_KEY}
+    depends_on:
+      - jaeger

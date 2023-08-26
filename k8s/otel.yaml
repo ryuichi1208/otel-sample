@@ -19,9 +19,8 @@ spec:
         timeout: 10s
 
     exporters:
-      # logging:
       jaeger:
-        endpoint: "http://j-simplest-collector.default.svc.cluster.local:14250"
+        endpoint: "http://simplest-collector.default.svc.cluster.local:14250"
         tls:
           insecure: true
 
