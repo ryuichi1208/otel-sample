@@ -2,9 +2,13 @@
 version: '3.8'
 services:
   prometheus:
-    image: prom/prometheus:latest
     ports:
       - 9090:9090
+    build:
+      dockerfile: prom/Dockerfile
+      context: .
+    volumes:
+      - ./prom/prometheus.yml:/etc/prometheus/prometheus.yml
 
   blackbox_exporter:
     image: prom/blackbox-exporter:latest
@@ -12,7 +16,7 @@ services:
       - ./blackbox.yaml:/etc/blackbox_exporter/config.yml
 
   otel-collector:
-    image: otel/opentelemetry-collector:0.67.0
+    image: otel/opentelemetry-collector:0.84.0
     restart: always
     command: ["--config=/etc/otel-collector-config.yaml", ""]
     volumes:

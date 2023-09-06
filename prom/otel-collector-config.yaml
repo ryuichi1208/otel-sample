@@ -19,12 +19,23 @@ receivers:
             target_label: instance
           - target_label: __address__
             replacement: blackbox_exporter:9115
+  hostmetrics:
+    collection_interval: 10s
+    scrapers:
+      cpu:
+      disk:
+      load:
+      paging:
 
 exporters:
   jaeger:
     endpoint: jaeger:14250
   file/no_rotation:
     path: /test.log
+  otlphttp:
+    metrics_endpoint: http://prometheus:9090/api/v1/otlp/v1/metrics
+    tls:
+      insecure: true
 
 processors:
   batch:
@@ -32,7 +43,7 @@ processors:
 service:
   pipelines:
     metrics:
-      receivers: [prometheus]
+      receivers: [prometheus, hostmetrics]
       processors: [batch]
-      exporters: [file/no_rotation]
+      exporters: [file/no_rotation, otlphttp]
 
