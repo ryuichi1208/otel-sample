@@ -5,8 +5,8 @@ receivers:
       http:
 
 exporters:
-  jaeger:
-    endpoint: localhost:14250
+  otlp:
+    endpoint: jaeger:4317
     tls:
       insecure: true
 
@@ -24,4 +24,4 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [jaeger]
+      exporters: [otlp]
