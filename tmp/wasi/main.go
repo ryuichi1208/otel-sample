@@ -1,7 +1,14 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"net"
+)
 
 func main() {
-	fmt.Println("Hello world!")
+	_, err := net.Listen("tcp", "127.0.0.1:3000")
+	if err != nil {
+		fmt.Println(err)
+	}
+
 }
